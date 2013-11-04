@@ -7,7 +7,6 @@
 //
 
 #import "NDViewController.h"
-#import "Reachability.h"
 #import "NDObject.h"
 
 @implementation NDCell
@@ -34,7 +33,7 @@
     NSString *str = [NDObject stringFromStatus:status];
     //NSLog(@"- %@: status = \"%@\"", self.object.host, str);
     self.titleLB.text = self.object.title;
-    self.urlLB.text = self.object.host;
+    self.urlLB.text = self.object.host.absoluteString;
     self.connectionIV.image = [NDObject imageFromStatus:status];
     self.reachableLB.text = str;
     
@@ -82,9 +81,9 @@
         // Custom initialization
 
         // Example
-        NDObject *nd1 = [NDObject objectWithTitle:@"Google" host:@"www.google.com"];
-        NDObject *nd2 = [NDObject objectWithTitle:@"The Verge (HTTP)" host:@"www.theverge.com"];
-        NDObject *nd3 = [NDObject objectWithTitle:@"Bad URL" host:@"somebadurlxxx"];
+        NDObject *nd1 = [NDObject objectWithTitle:@"Google" host:[NSURL URLWithString:@"https://www.google.com"]];
+        NDObject *nd2 = [NDObject objectWithTitle:@"The Verge (HTTP)" host:[NSURL URLWithString:@"www.theverge.com"]];
+        NDObject *nd3 = [NDObject objectWithTitle:@"Bad URL" host:[NSURL URLWithString:@"somebadurlxxx"]];
         self.testHosts = @[nd1,nd2,nd3];
     }
     return self;
@@ -132,7 +131,6 @@
     for (NDObject *o in self.testHosts) {
         if ([o isKindOfClass:[NDObject class]]) {
             [o measureLatency];
-            //[o performSelector:@selector(measureLatency) withObject:nil afterDelay:0.1];
         }
     }
     [self.refreshControl performSelector:@selector(endRefreshing) withObject:nil afterDelay:1];

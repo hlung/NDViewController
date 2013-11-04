@@ -10,7 +10,7 @@
 #import "SimplePingHelper.h"
 
 @interface NDObject ()
-@property (nonatomic,strong) NSString *host;
+@property (nonatomic,strong) NSURL *host;
 @property (nonatomic,strong) NSString *title;
 @property (nonatomic,strong) NSNumber *latency;
 @property (nonatomic,assign) NDLatencyType latencyType;
@@ -20,18 +20,28 @@
 @implementation NDObject {
     NSDate *latencyStart;
     SimplePingHelper *pinger;
+    NSString *hostScheme, *hostName;
 }
 
-+ (NDObject*)objectWithTitle:(NSString*)title host:(NSString*)host {
++ (NDObject*)objectWithTitle:(NSString*)title host:(NSURL*)host {
     NDObject *new = [[NDObject alloc] init];
     new.title = title;
     new.host = host;
     return new;
 }
 
-- (void)setHost:(NSString *)host {
-    if ([host isKindOfClass:[NSString class]]) {
+- (void)setHost:(NSURL *)host {
+    if ([host isKindOfClass:[NSURL class]]) {
         _host = host;
+
+        hostScheme = self.host.scheme;
+        hostName = self.host.host;
+        if (hostScheme == nil) {
+            hostScheme = @"http";
+            hostName = self.host.absoluteString;
+            _host = [NSURL URLWithString:[NSString stringWithFormat:@"%@://%@",hostScheme,hostName]];
+        }
+        
         self.latency = nil;
         self.latencyType = NDLatencyType_unknown;
     }
@@ -57,7 +67,11 @@
                                              selector:@selector(reachabilityChanged:)
                                                  name:kReachabilityChangedNotification
                                                object:nil];
-    self.hostReach = [Reachability reachabilityWithHostName:self.host];
+    
+    // NOTE: Some version of Reachability uses method name -reachabilityWithHostName: instead
+    // (with lower case 'n'). So be careful!
+    //self.hostReach = [Reachability reachabilityWithHostname:hostName];
+    self.hostReach = [Reachability reachabilityWithHostName:hostName];
 	[self.hostReach startNotifier];
 }
 
@@ -101,7 +115,7 @@
 - (void)measureLatencyByICMP {
     NSLog(@"%@ - measuring PING latency...", self);
     latencyStart = [NSDate date];
-    [SimplePingHelper ping:self.host target:self sel:@selector(pingResult:)];
+    [SimplePingHelper ping:hostName target:self sel:@selector(pingResult:)];
 }
 
 - (void)pingResult:(NSNumber*)success {
@@ -127,7 +141,8 @@
 // Before sending, the host url string is prefixed by @"http://".
 - (void)measureLatencyByHTTPGET {
     NSLog(@"%@ - measuring HTTP GET latency...", self);
-    NSURL *url = [NSURL URLWithString:[@"http://" stringByAppendingString:self.host]];
+    //NSURL *url = [NSURL URLWithString:[@"http://" stringByAppendingString:self.host]];
+    NSURL *url = self.host;
     NSURLRequest *req = [NSURLRequest requestWithURL:url];
     latencyStart = [NSDate date];
     [NSURLConnection connectionWithRequest:req delegate:self];

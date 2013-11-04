@@ -21,8 +21,9 @@ typedef NS_ENUM(NSInteger, NDLatencyType) {
 
 /** Holds a host information for testing reachability and latency */
 @interface NDObject : NSObject
-/** Host part of url, no "http://", e.g. "www.google.com". */
-@property (nonatomic,strong,readonly) NSString *host;
+/** Host name or URL. If no URL scheme is specified, the url is reconstructed using "http" scheme, 
+ to allow calculating HTTP latency. HTTPS URLs are supported by skipping certificate checking. */
+@property (nonatomic,strong,readonly) NSURL *host;
 /** Host name for display */
 @property (nonatomic,strong,readonly) NSString *title;
 /** Latency time, in seconds. Double type. */
