@@ -31,6 +31,8 @@
 }
 
 - (void)setHost:(NSURL *)host {
+    NSAssert([host isKindOfClass:[NSURL class]], @"Expect host to be NSURL, got %@",NSStringFromClass([host class]));
+
     if ([host isKindOfClass:[NSURL class]]) {
         _host = host;
 
