@@ -1,4 +1,4 @@
-# iOS Netwerk Diagnostics
+# NDViewController (Netwerk Diagnostics)
 A view controller with a table view showing a list of host urls, each with reachability and latency information.
  
 ![Screenshot](/README/ss.png)
